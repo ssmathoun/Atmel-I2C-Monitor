@@ -7,6 +7,8 @@
 #define TRIG_PIN A0
 #define ECHO_PIN A1
 
+#define LED_PIN A2
+
 DHT dht(DHTPIN, DHTTYPE);
 
 // The 8-Bit Parallel Constructor
@@ -16,6 +18,10 @@ LiquidCrystal lcd(3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13);
 unsigned long previousMillis = 0; // Stores the last time the sensor was updated.
 const long interval = 2000; // Interval at which to read sensor data (2000 milliseconds).
 
+unsigned long previousLedMillis = 0; // Stores the last time the LED was updated.
+const long ledInterval = 1000; // Interval at which to blink LED (1000 milliseconds).
+int ledState = LOW; // Tracks current LED state (ON or OFF).
+
 void setup() {
   Serial.begin(9600); // Opens the USB connection to my device at 9600 bits per second.
   dht.begin(); // Wakes up Temp/Humidity DHT 11 sensor
@@ -24,6 +30,9 @@ void setup() {
   pinMode(TRIG_PIN, OUTPUT);
   pinMode(ECHO_PIN, INPUT);
 
+  // Initialize LED Pin
+  pinMode(LED_PIN, OUTPUT);
+
   lcd.begin(16, 2); // Initializes the 16x2 screen in 8-bit mode
 
 }
@@ -31,7 +40,23 @@ void setup() {
 void loop() {
   unsigned long currentMillis = millis(); // Get the current time
 
-  // Check if 2 seconds have passed
+  // LED Blink Logic: Check if 1 second has passed.
+  if (currentMillis - previousLedMillis >= ledInterval) {
+    previousLedMillis = currentMillis; // Reset the LED timer.
+
+    // Toggle LED State:
+    if (ledState == LOW) {
+      ledState = HIGH;
+    }
+    else {
+      ledState = LOW;
+    }
+  }
+
+  // Apply the new state to physical PIN.
+  digitalWrite(LED_PIN, ledState);
+
+  // Sensor Logic: Check if 2 seconds have passed.
   if (currentMillis - previousMillis >= interval) {
     previousMillis = currentMillis;
 
